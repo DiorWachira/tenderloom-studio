@@ -1,121 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
 
+const pillars = [
+  {
+    title: 'Structured Vendor Intake',
+    detail:
+      'Capture procurement inputs in a standard format so comparisons stay fair and auditable.',
+  },
+  {
+    title: 'Weighted Scoring Matrix',
+    detail:
+      'Score vendors by agreed criteria and instantly see how rank changes with business priorities.',
+  },
+  {
+    title: 'Decision Memo Export',
+    detail:
+      'Generate a board-ready recommendation memo with rationale, risks, and evidence traceability.',
+  },
+]
+
+const increments = [
+  'Foundation architecture and workflow guardrails',
+  'Vendor profile + intake form with validation',
+  'Scoring matrix and recommendation engine',
+  'Memo export and decision audit trail',
+]
+
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <main className="shell">
+      <header className="hero">
+        <p className="kicker">Tenderloom Studio</p>
+        <h1>Procurement decisions, designed for trust.</h1>
+        <p className="summary">
+          A premium static web cockpit for comparing vendors with transparent scoring,
+          compliance checks, and decision-ready documentation.
+        </p>
+      </header>
+
+      <section className="pillars" aria-label="Core capabilities">
+        {pillars.map((pillar) => (
+          <article key={pillar.title} className="card">
+            <h2>{pillar.title}</h2>
+            <p>{pillar.detail}</p>
+          </article>
+        ))}
       </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+      <section className="increment-board" aria-label="Build increments">
+        <h2>Increment roadmap</h2>
+        <ol>
+          {increments.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ol>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <footer className="footer-note">
+        Static-first architecture, GitHub Pages deploy, and CI verification from day one.
+      </footer>
+    </main>
   )
 }
 

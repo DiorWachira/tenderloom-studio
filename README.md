@@ -1,32 +1,39 @@
-# React + TypeScript + Vite
+# Tenderloom Studio
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Tenderloom Studio is a premium static web procurement cockpit that helps teams compare vendors, score options transparently, and produce decision-ready evidence.
 
-Currently, two official plugins are available:
+## Why this project is CV-strong
+- Real-world decision workflow instead of a generic CRUD demo
+- Clear product framing with measurable problem-to-solution logic
+- Professional engineering practices: issues, PR templates, CI, tests, and deploy automation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Technology stack
+- Vite + React + TypeScript
+- react-hook-form + zod
+- Vitest + Testing Library
+- Oxlint + Prettier
+- GitHub Actions CI + GitHub Pages deployment
 
-## React Compiler
+Detailed stack rationale: see docs/STACK.md.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Local development
+1. Install dependencies:
+   npm install
+2. Start dev server:
+   npm run dev
+3. Run quality checks:
+   npm run lint
+   npm run test
+   npm run build
 
-## Expanding the Oxlint configuration
+## Increment roadmap
+The increment plan is documented in docs/INCREMENTS.md.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Git workflow expectations
+- Open a feature branch per increment or sub-feature
+- Create issues before implementation
+- Open PRs to document scope, screenshots, and verification
+- Keep commits focused and descriptive for audit-quality history
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Deployment
+GitHub Pages deployment is automated through .github/workflows/deploy-pages.yml.
