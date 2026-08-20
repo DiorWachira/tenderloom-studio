@@ -22,6 +22,6 @@
 - Add acceptance tests for scoring logic ✅
 
 ## Increment 5
-- Build decision memo export view
-- Add audit trail timeline
-- Final docs, screenshots, and release notes
+- Build decision memo export view ✅
+- Add audit trail timeline ✅
+- Final docs, screenshots, and release notes ✅
