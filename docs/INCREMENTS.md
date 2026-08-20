@@ -17,9 +17,9 @@
 - Add edit and delete interactions ✅
 
 ## Increment 4
-- Build weighted scoring matrix
-- Add recommendation summary output
-- Add acceptance tests for scoring logic
+- Build weighted scoring matrix ✅
+- Add recommendation summary output ✅
+- Add acceptance tests for scoring logic ✅
 
 ## Increment 5
 - Build decision memo export view

@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import './App.css'
+import { calculateWeightedScores } from './scoring'
 
 const pillars = [
   {
@@ -80,6 +81,7 @@ function readStoredVendors(): VendorRecord[] {
 function App() {
   const [vendors, setVendors] = useState<VendorRecord[]>(() => readStoredVendors())
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [weights, setWeights] = useState({ cost: 45, speed: 30, compliance: 25 })
 
   const {
     register,
@@ -107,6 +109,15 @@ function App() {
     () => [...vendors].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [vendors],
   )
+
+  const scoreRows = useMemo(
+    () => calculateWeightedScores(sortedVendors, weights),
+    [sortedVendors, weights],
+  )
+
+  const leadVendor = scoreRows[0]
+  const runnerUp = scoreRows[1]
+  const leadMargin = runnerUp ? Math.round((leadVendor.totalScore - runnerUp.totalScore) * 10) / 10 : 0
 
   const onSubmit = (values: VendorInput) => {
     const now = new Date().toISOString()
@@ -301,6 +312,107 @@ function App() {
                 </li>
               ))}
             </ul>
+          )}
+        </article>
+      </section>
+
+      <section className="matrix" aria-label="Weighted scoring matrix">
+        <article className="weights-panel">
+          <h2>Weight controls</h2>
+          <p>
+            Tune importance by procurement strategy. Scores rebalance instantly across all
+            vendors.
+          </p>
+
+          <label htmlFor="weightCost">
+            Cost priority: <strong>{weights.cost}%</strong>
+          </label>
+          <input
+            id="weightCost"
+            type="range"
+            min="0"
+            max="100"
+            value={weights.cost}
+            onChange={(event) =>
+              setWeights((current) => ({ ...current, cost: Number(event.target.value) }))
+            }
+          />
+
+          <label htmlFor="weightSpeed">
+            Delivery speed priority: <strong>{weights.speed}%</strong>
+          </label>
+          <input
+            id="weightSpeed"
+            type="range"
+            min="0"
+            max="100"
+            value={weights.speed}
+            onChange={(event) =>
+              setWeights((current) => ({ ...current, speed: Number(event.target.value) }))
+            }
+          />
+
+          <label htmlFor="weightCompliance">
+            Compliance priority: <strong>{weights.compliance}%</strong>
+          </label>
+          <input
+            id="weightCompliance"
+            type="range"
+            min="0"
+            max="100"
+            value={weights.compliance}
+            onChange={(event) =>
+              setWeights((current) => ({ ...current, compliance: Number(event.target.value) }))
+            }
+          />
+        </article>
+
+        <article className="score-panel">
+          <h2>Scoring matrix</h2>
+          {scoreRows.length === 0 ? (
+            <p className="empty">Add vendors to generate weighted ranking and recommendations.</p>
+          ) : (
+            <>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Vendor</th>
+                      <th>Total</th>
+                      <th>Cost</th>
+                      <th>Speed</th>
+                      <th>Compliance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scoreRows.map((row) => (
+                      <tr key={row.id}>
+                        <td>{row.vendorName}</td>
+                        <td>{row.totalScore}</td>
+                        <td>{row.costScore}</td>
+                        <td>{row.speedScore}</td>
+                        <td>{row.complianceScore}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="recommendation" role="status" aria-live="polite">
+                <h3>Recommendation summary</h3>
+                <p>
+                  <strong>{leadVendor.vendorName}</strong> is currently ranked first with a weighted
+                  score of <strong>{leadVendor.totalScore}</strong>.
+                </p>
+                {runnerUp ? (
+                  <p>
+                    Lead margin over {runnerUp.vendorName}: <strong>{leadMargin}</strong> points.
+                  </p>
+                ) : (
+                  <p>Add at least one more vendor to see comparative margin.</p>
+                )}
+              </div>
+            </>
           )}
         </article>
       </section>
