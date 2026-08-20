@@ -31,6 +31,7 @@ const increments = [
 ]
 
 const STORAGE_KEY = 'tenderloom.vendors.v1'
+const AUDIT_STORAGE_KEY = 'tenderloom.audit.v1'
 
 const vendorSchema = z.object({
   vendorName: z.string().min(2, 'Vendor name must be at least 2 characters.'),
@@ -60,6 +61,15 @@ type VendorInput = z.infer<typeof vendorSchema>
 type VendorFormValues = z.input<typeof vendorSchema>
 type VendorRecord = z.infer<typeof vendorRecordSchema>
 
+const auditEventSchema = z.object({
+  id: z.string(),
+  timestamp: z.string(),
+  action: z.string(),
+  detail: z.string(),
+})
+
+type AuditEvent = z.infer<typeof auditEventSchema>
+
 function readStoredVendors(): VendorRecord[] {
   if (typeof window === 'undefined') {
     return []
@@ -78,10 +88,29 @@ function readStoredVendors(): VendorRecord[] {
   return parsed.data
 }
 
+function readStoredAuditTrail(): AuditEvent[] {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const raw = window.localStorage.getItem(AUDIT_STORAGE_KEY)
+  if (!raw) {
+    return []
+  }
+
+  const parsed = z.array(auditEventSchema).safeParse(JSON.parse(raw))
+  if (!parsed.success) {
+    return []
+  }
+
+  return parsed.data
+}
+
 function App() {
   const [vendors, setVendors] = useState<VendorRecord[]>(() => readStoredVendors())
   const [editingId, setEditingId] = useState<string | null>(null)
   const [weights, setWeights] = useState({ cost: 45, speed: 30, compliance: 25 })
+  const [auditTrail, setAuditTrail] = useState<AuditEvent[]>(() => readStoredAuditTrail())
 
   const {
     register,
@@ -105,6 +134,10 @@ function App() {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(vendors))
   }, [vendors])
 
+  useEffect(() => {
+    window.localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(auditTrail))
+  }, [auditTrail])
+
   const sortedVendors = useMemo(
     () => [...vendors].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [vendors],
@@ -119,10 +152,72 @@ function App() {
   const runnerUp = scoreRows[1]
   const leadMargin = runnerUp ? Math.round((leadVendor.totalScore - runnerUp.totalScore) * 10) / 10 : 0
 
+  const appendAuditEvent = (action: string, detail: string) => {
+    setAuditTrail((current) => [
+      {
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        action,
+        detail,
+      },
+      ...current,
+    ].slice(0, 40))
+  }
+
+  const memoText = useMemo(() => {
+    const generatedAt = new Date().toLocaleString()
+    const shortlist = scoreRows
+      .slice(0, 3)
+      .map(
+        (row, index) =>
+          `${index + 1}. ${row.vendorName} | total ${row.totalScore} | cost ${row.costScore} | speed ${row.speedScore} | compliance ${row.complianceScore}`,
+      )
+      .join('\n')
+
+    const leadLine = leadVendor
+      ? `Recommended vendor: ${leadVendor.vendorName} (weighted score ${leadVendor.totalScore})`
+      : 'Recommended vendor: not available yet.'
+
+    return [
+      'Tenderloom Studio - Decision Memo',
+      `Generated: ${generatedAt}`,
+      '',
+      'Weight profile:',
+      `- Cost: ${weights.cost}%`,
+      `- Speed: ${weights.speed}%`,
+      `- Compliance: ${weights.compliance}%`,
+      '',
+      leadLine,
+      runnerUp ? `Lead margin vs ${runnerUp.vendorName}: ${leadMargin} points` : '',
+      '',
+      'Shortlist:',
+      shortlist || 'No vendor scores available.',
+      '',
+      'Notes:',
+      '- This memo is generated from static local scoring data.',
+      '- Validate final award decision with governance and legal review.',
+    ]
+      .filter(Boolean)
+      .join('\n')
+  }, [leadMargin, leadVendor, runnerUp, scoreRows, weights])
+
+  const exportMemo = () => {
+    const blob = new Blob([memoText], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `tenderloom-decision-memo-${new Date().toISOString().slice(0, 10)}.txt`
+    link.click()
+    URL.revokeObjectURL(url)
+
+    appendAuditEvent('Memo exported', 'Decision memo exported as .txt')
+  }
+
   const onSubmit = (values: VendorInput) => {
     const now = new Date().toISOString()
 
     if (editingId) {
+      const editedVendor = vendors.find((record) => record.id === editingId)
       setVendors((current) =>
         current.map((record) =>
           record.id === editingId
@@ -134,6 +229,7 @@ function App() {
             : record,
         ),
       )
+      appendAuditEvent('Vendor updated', `${editedVendor?.vendorName ?? values.vendorName} profile updated`)
       setEditingId(null)
     } else {
       setVendors((current) => [
@@ -145,6 +241,7 @@ function App() {
         },
         ...current,
       ])
+      appendAuditEvent('Vendor added', `${values.vendorName} profile added`)
     }
 
     reset({
@@ -160,6 +257,7 @@ function App() {
 
   const onEdit = (record: VendorRecord) => {
     setEditingId(record.id)
+    appendAuditEvent('Edit opened', `${record.vendorName} loaded into edit form`)
     reset({
       vendorName: record.vendorName,
       serviceCategory: record.serviceCategory,
@@ -172,7 +270,9 @@ function App() {
   }
 
   const onDelete = (id: string) => {
+    const deletedVendor = vendors.find((record) => record.id === id)
     setVendors((current) => current.filter((record) => record.id !== id))
+    appendAuditEvent('Vendor deleted', `${deletedVendor?.vendorName ?? 'Unknown vendor'} removed`)
     if (editingId === id) {
       setEditingId(null)
       reset({
@@ -413,6 +513,51 @@ function App() {
                 )}
               </div>
             </>
+          )}
+        </article>
+      </section>
+
+      <section className="delivery" aria-label="Decision output and audit evidence">
+        <article className="memo-panel">
+          <h2>Decision memo export</h2>
+          <p>
+            Generate a submission-ready summary containing weighted rationale and top-ranked
+            suppliers.
+          </p>
+          <textarea value={memoText} readOnly rows={14} aria-label="Decision memo preview" />
+          <div className="memo-actions">
+            <button type="button" onClick={exportMemo}>
+              Export memo as .txt
+            </button>
+            <button
+              type="button"
+              className="ghost"
+              onClick={() =>
+                appendAuditEvent(
+                  'Weight profile applied',
+                  `Cost ${weights.cost}% | Speed ${weights.speed}% | Compliance ${weights.compliance}%`,
+                )
+              }
+            >
+              Apply weight profile
+            </button>
+          </div>
+        </article>
+
+        <article className="audit-panel">
+          <h2>Audit trail timeline</h2>
+          {auditTrail.length === 0 ? (
+            <p className="empty">No timeline events yet. Actions will be recorded here.</p>
+          ) : (
+            <ol>
+              {auditTrail.map((event) => (
+                <li key={event.id}>
+                  <p className="event-head">{event.action}</p>
+                  <p>{event.detail}</p>
+                  <time dateTime={event.timestamp}>{new Date(event.timestamp).toLocaleString()}</time>
+                </li>
+              ))}
+            </ol>
           )}
         </article>
       </section>

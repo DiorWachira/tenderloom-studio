@@ -29,6 +29,11 @@ Detailed stack rationale: see docs/STACK.md.
 ## Increment roadmap
 The increment plan is documented in docs/INCREMENTS.md.
 
+## Delivery artifacts
+- Release notes: docs/RELEASE_NOTES.md
+- Screenshot evidence plan: docs/SCREENSHOT_EVIDENCE.md
+- Increment 5 summary: docs/INCREMENT_5_SUMMARY.md
+
 ## Git workflow expectations
 - Open a feature branch per increment or sub-feature
 - Create issues before implementation

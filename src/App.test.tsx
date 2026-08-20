@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
 import App from './App'
 
 describe('App', () => {
@@ -54,5 +55,29 @@ describe('App', () => {
     expect(
       screen.queryByRole('heading', { name: /northlake systems group/i }),
     ).not.toBeInTheDocument()
+  })
+
+  it('records memo export and weight profile actions in audit trail', async () => {
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url')
+    const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /apply weight profile/i }))
+    expect(await screen.findByText(/weight profile applied/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /export memo as .txt/i }))
+    expect(await screen.findByText(/decision memo exported as .txt/i)).toBeInTheDocument()
+
+    expect(createObjectURL).toHaveBeenCalled()
+    expect(revokeObjectURL).toHaveBeenCalled()
+    expect(clickSpy).toHaveBeenCalled()
+
+    createObjectURL.mockRestore()
+    revokeObjectURL.mockRestore()
+    clickSpy.mockRestore()
   })
 })
