@@ -12,9 +12,9 @@
 - Add issue and PR templates
 
 ## Increment 3
-- Build Vendor Intake form with validation
-- Persist vendor records in localStorage
-- Add edit and delete interactions
+- Build Vendor Intake form with validation ✅
+- Persist vendor records in localStorage ✅
+- Add edit and delete interactions ✅
 
 ## Increment 4
 - Build weighted scoring matrix
