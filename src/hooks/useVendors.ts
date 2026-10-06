@@ -1,20 +1,28 @@
 import { useCallback, useMemo } from 'react'
 import { z } from 'zod'
+import { assessVendor } from '../domain/compliance'
+import type { ComplianceCriterion, CriterionResponse } from '../domain/compliance'
+import { migrateV1toV2, parseLegacyVendors } from '../domain/migrations'
 import { buildSampleVendors } from '../domain/sample'
 import { STORAGE_KEYS, vendorRecordSchema } from '../domain/schemas'
-import type { VendorInput, VendorRecord } from '../domain/schemas'
+import type { VendorInput } from '../domain/schemas'
 import { usePersistentState } from './usePersistentState'
 
 const vendorListSchema = z.array(vendorRecordSchema)
-const noVendors: VendorRecord[] = []
 
 type AuditRecorder = (action: string, detail: string) => void
 
-export function useVendors(record: AuditRecorder) {
-  const [vendors, setVendors] = usePersistentState(
-    STORAGE_KEYS.vendors,
-    vendorListSchema,
-    noVendors,
+const STATUS_LABEL: Record<CriterionResponse['status'], string> = {
+  met: 'met',
+  partial: 'partially met',
+  'not-met': 'not met',
+  unknown: 'unknown',
+}
+
+export function useVendors(record: AuditRecorder, criteria: ComplianceCriterion[]) {
+  // No v2 data yet: upgrade any v1 roster. The v1 key is left untouched as a backup.
+  const [vendors, setVendors] = usePersistentState(STORAGE_KEYS.vendors, vendorListSchema, () =>
+    migrateV1toV2(parseLegacyVendors(window.localStorage.getItem(STORAGE_KEYS.legacyVendors)), criteria),
   )
 
   const sortedVendors = useMemo(
@@ -26,7 +34,7 @@ export function useVendors(record: AuditRecorder) {
     (values: VendorInput) => {
       const now = new Date().toISOString()
       setVendors((current) => [
-        { id: crypto.randomUUID(), createdAt: now, updatedAt: now, ...values },
+        { id: crypto.randomUUID(), createdAt: now, updatedAt: now, ...values, compliance: {} },
         ...current,
       ])
       record('Vendor added', `${values.vendorName} profile added`)
@@ -55,10 +63,42 @@ export function useVendors(record: AuditRecorder) {
     [record, setVendors, vendors],
   )
 
+  const updateCompliance = useCallback(
+    (vendorId: string, criterionId: string, response: CriterionResponse) => {
+      const vendor = vendors.find((candidate) => candidate.id === vendorId)
+      const criterion = criteria.find((candidate) => candidate.id === criterionId)
+      if (!vendor || !criterion) {
+        return
+      }
+
+      const now = new Date()
+      const nextCompliance = { ...vendor.compliance, [criterionId]: response }
+      const wasEligible = assessVendor(vendorId, criteria, vendor.compliance, now).eligible
+      const isEligible = assessVendor(vendorId, criteria, nextCompliance, now).eligible
+
+      setVendors((current) =>
+        current.map((candidate) =>
+          candidate.id === vendorId
+            ? { ...candidate, compliance: nextCompliance, updatedAt: now.toISOString() }
+            : candidate,
+        ),
+      )
+
+      record('Compliance updated', `${vendor.vendorName}: ${criterion.label} ${STATUS_LABEL[response.status]}`)
+      if (wasEligible && !isEligible) {
+        record('Vendor disqualified', `${vendor.vendorName} failed a mandatory gate (${criterion.label})`)
+      } else if (!wasEligible && isEligible) {
+        record('Vendor reinstated', `${vendor.vendorName} now passes every mandatory gate`)
+      }
+    },
+    [criteria, record, setVendors, vendors],
+  )
+
   const loadSample = useCallback(() => {
-    setVendors(buildSampleVendors())
-    record('Sample tender loaded', 'Four demo vendors added to the roster')
+    const sample = buildSampleVendors()
+    setVendors(sample)
+    record('Sample tender loaded', `${sample.length} demo vendors added to the roster`)
   }, [record, setVendors])
 
-  return { vendors: sortedVendors, addVendor, updateVendor, removeVendor, loadSample }
+  return { vendors: sortedVendors, addVendor, updateVendor, removeVendor, updateCompliance, loadSample }
 }

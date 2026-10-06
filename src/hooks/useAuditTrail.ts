@@ -6,7 +6,7 @@ import { usePersistentState } from './usePersistentState'
 
 const MAX_EVENTS = 40
 const auditListSchema = z.array(auditEventSchema)
-const noEvents: AuditEvent[] = []
+const noEvents = (): AuditEvent[] => []
 
 export function useAuditTrail() {
   const [events, setEvents] = usePersistentState(STORAGE_KEYS.audit, auditListSchema, noEvents)
