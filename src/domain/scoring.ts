@@ -21,6 +21,8 @@ export type VendorScore = {
   complianceScore: number
 }
 
+export const DEFAULT_WEIGHTS: ScoreWeights = { cost: 45, speed: 30, compliance: 25 }
+
 const scaleTo100 = (value: number, min: number, max: number): number => {
   if (max === min) {
     return 100

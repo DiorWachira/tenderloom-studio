@@ -1,0 +1,340 @@
+/* ---------- Illustration colour utilities (token-driven, so themes can restyle art) ---------- */
+.illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.f-none { fill: none; }
+.f-ink { fill: var(--ink); }
+.f-paper { fill: var(--paper); }
+.f-paper-sunk { fill: var(--paper-sunk); }
+.f-accent { fill: var(--accent); }
+.f-accent-soft { fill: var(--accent-soft); }
+.f-sage { fill: var(--sage); }
+.f-sage-soft { fill: var(--sage-soft); }
+.f-brass { fill: var(--brass); }
+
+.s-ink { stroke: var(--ink); }
+.s-soft { stroke: var(--ink-soft); }
+.s-paper { stroke: var(--paper); }
+.s-accent { stroke: var(--accent); }
+.s-sage { stroke: var(--sage); }
+.s-brass { stroke: var(--brass); }
+.s-brass-soft { stroke: var(--brass-soft); }
+.s-on-accent { stroke: var(--on-accent); }
+
+.sw-2 { stroke-width: 2; }
+.sw-3 { stroke-width: 3; }
+.sw-4 { stroke-width: 4; }
+.sw-5 { stroke-width: 5; }
+.sw-6 { stroke-width: 6; }
+.sw-12 { stroke-width: 12; }
+.sw-16 { stroke-width: 16; }
+.round { stroke-linecap: round; }
+.join { stroke-linejoin: round; }
+.dashed { stroke-dasharray: 3 7; stroke-linecap: round; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+  background: var(--accent-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--secondary {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--control-border);
+}
+
+.btn--secondary:hover {
+  background: var(--paper-sunk);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--accent-strong);
+}
+
+.btn--ghost:hover {
+  background: var(--accent-soft);
+}
+
+.btn--danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: transparent;
+}
+
+.btn--danger:hover {
+  background: var(--danger-soft);
+}
+
+.btn--small {
+  min-height: 2rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+/* ---------- Chips ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--step--1);
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.chip::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.chip--neutral { background: var(--paper-sunk); color: var(--ink-soft); }
+.chip--ok { background: var(--sage-soft); color: var(--sage-ink); }
+.chip--risk { background: var(--danger-soft); color: var(--danger); }
+.chip--brass { background: var(--brass-soft); color: var(--brass-ink); }
+.chip--accent { background: var(--accent-soft); color: var(--accent-strong); }
+
+/* ---------- Avatars ---------- */
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  font-family: var(--font-head);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 1px rgb(43 33 24 / 12%);
+}
+
+.avatar--sm { width: 2rem; height: 2rem; font-size: 0.8rem; }
+.avatar--md { width: 2.75rem; height: 2.75rem; font-size: 1rem; }
+.avatar--lg { width: 3.5rem; height: 3.5rem; font-size: 1.25rem; }
+
+.avatar[data-tint='0'] { background: var(--tint-1-bg); color: var(--tint-1-fg); }
+.avatar[data-tint='1'] { background: var(--tint-2-bg); color: var(--tint-2-fg); }
+.avatar[data-tint='2'] { background: var(--tint-3-bg); color: var(--tint-3-fg); }
+.avatar[data-tint='3'] { background: var(--tint-4-bg); color: var(--tint-4-fg); }
+.avatar[data-tint='4'] { background: var(--tint-5-bg); color: var(--tint-5-fg); }
+.avatar[data-tint='5'] { background: var(--tint-6-bg); color: var(--tint-6-fg); }
+
+/* ---------- Panels ---------- */
+.panel {
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  box-shadow: var(--shadow-md);
+}
+
+.panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.panel__desc {
+  margin-top: var(--space-1);
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.page-header {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.page-header h1 {
+  font-size: var(--step-3);
+}
+
+.page-header__lede {
+  max-width: 62ch;
+  color: var(--ink-soft);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+/* ---------- Empty states ---------- */
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--paper-sunk) 45%, transparent);
+}
+
+.empty-state__art {
+  width: min(13rem, 70%);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state__text {
+  max-width: 44ch;
+  color: var(--ink-soft);
+}
+
+.empty-state__action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* ---------- Form controls ---------- */
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  background: var(--paper-sunk);
+  color: var(--ink);
+  font: inherit;
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
+}
+
+.field input:hover,
+.field select:hover,
+.field textarea:hover {
+  background: var(--paper);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline-offset: 0;
+}
+
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'],
+.field textarea[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.field__error {
+  color: var(--danger);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+/* ---------- Tables ---------- */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.92rem;
+}
+
+thead th {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--paper-sunk);
+}
+
+tbody tr + tr td,
+tbody tr + tr th {
+  border-top: 1px solid var(--line);
+}
+
+tbody th {
+  font-weight: 600;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
