@@ -1,25 +1,43 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest'
+import { BASELINE_CRITERIA, addDays } from './compliance'
 import { vendorRecordSchema } from './schemas'
 import { buildSampleVendors } from './sample'
-import { calculateWeightedScores } from './scoring'
 
 describe('buildSampleVendors', () => {
-  it('produces schema-valid records with unique ids', () => {
-    const vendors = buildSampleVendors(new Date('2026-01-01T00:00:00Z'))
+  const now = new Date('2026-01-15T09:00:00Z')
+  const vendors = buildSampleVendors(now)
 
-    expect(vendors).toHaveLength(4)
+  it('produces schema-valid records with unique ids and newest-first timestamps', () => {
+    expect(vendors).toHaveLength(5)
     for (const vendor of vendors) {
       expect(vendorRecordSchema.safeParse(vendor).success).toBe(true)
     }
     expect(new Set(vendors.map((vendor) => vendor.id)).size).toBe(vendors.length)
+    expect(vendors[0].updatedAt > vendors[1].updatedAt).toBe(true)
   })
 
-  it('gives the demo a compliant leader and a cheaper non-compliant bid', () => {
-    const vendors = buildSampleVendors()
-    const rows = calculateWeightedScores(vendors, { cost: 45, speed: 30, compliance: 25 })
-    const cheapest = [...vendors].sort((a, b) => a.bidAmount - b.bidAmount)[0]
+  it('only answers criteria from the baseline checklist', () => {
+    const ids = new Set(BASELINE_CRITERIA.map((criterion) => criterion.id))
+    for (const vendor of vendors) {
+      expect(Object.keys(vendor.compliance).every((id) => ids.has(id))).toBe(true)
+    }
+  })
 
-    expect(cheapest.compliant).toBe('no')
-    expect(rows[0].vendorName).not.toBe(cheapest.vendorName)
+  it('dates evidence relative to now and attaches references only to answered items', () => {
+    const northlake = vendors.find((vendor) => vendor.vendorName === 'Northlake Systems')!
+    expect(northlake.compliance.insurance).toEqual({
+      status: 'met',
+      evidenceRef: 'evidence/northlake-systems/insurance.pdf',
+      evidenceNote: '',
+      evidenceDate: addDays('2026-01-15', -350),
+    })
+
+    const harbor = vendors.find((vendor) => vendor.vendorName === 'Harbor & Finch Digital')!
+    expect(harbor.compliance['modern-slavery']).toEqual({ status: 'unknown', evidenceRef: '', evidenceNote: '' })
+  })
+
+  it('defaults to the current time', () => {
+    expect(buildSampleVendors()).toHaveLength(5)
   })
 })

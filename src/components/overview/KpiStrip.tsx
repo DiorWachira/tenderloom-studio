@@ -22,9 +22,9 @@ export function KpiStrip({ kpis }: { kpis: Kpis }) {
       note: 'weighted score',
     },
     {
-      label: 'Compliant',
-      value: kpis.compliantShare === null ? dash : `${kpis.compliantShare}%`,
-      note: 'of submitted bids',
+      label: 'Eligible',
+      value: kpis.eligibleShare === null ? dash : `${kpis.eligibleShare}%`,
+      note: 'pass every mandatory gate',
     },
   ]
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { RiskLevel } from '../domain/compliance'
 import type { VendorInput, VendorRecord } from '../domain/schemas'
 import { VendorForm } from '../components/vendors/VendorForm'
 import { VendorRoster } from '../components/vendors/VendorRoster'
@@ -6,6 +7,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 
 type VendorsViewProps = {
   vendors: VendorRecord[]
+  riskById: Record<string, RiskLevel>
   onAdd: (values: VendorInput) => void
   onUpdate: (id: string, values: VendorInput) => void
   onRemove: (id: string) => void
@@ -13,7 +15,15 @@ type VendorsViewProps = {
   onRecord: (action: string, detail: string) => void
 }
 
-export function VendorsView({ vendors, onAdd, onUpdate, onRemove, onLoadSample, onRecord }: VendorsViewProps) {
+export function VendorsView({
+  vendors,
+  riskById,
+  onAdd,
+  onUpdate,
+  onRemove,
+  onLoadSample,
+  onRecord,
+}: VendorsViewProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const editing = vendors.find((vendor) => vendor.id === editingId) ?? null
 
@@ -37,6 +47,7 @@ export function VendorsView({ vendors, onAdd, onUpdate, onRemove, onLoadSample, 
         />
         <VendorRoster
           vendors={vendors}
+          riskById={riskById}
           editingId={editingId}
           onLoadSample={onLoadSample}
           onEdit={(vendor) => {

@@ -37,11 +37,11 @@ Increments 6-9 are delivered by dedicated agents in `.github/agents/`. Each one 
 - Original SVG illustrations, brand mark, favicon, image credits ✅
 - Before/after screenshots (deferred, see HANDOFF.md)
 
-## Increment 7 - Compliance Engine (Claude Opus 5.5)
-- Criteria model with mandatory gates, scored criteria, evidence expiry
-- Findings, risk levels, abnormally low tender detection
-- Scoring v2 with contribution breakdown, tie-breaks, sensitivity analysis
-- Versioned storage migration v1 to v2, audit events, 95% domain coverage
+## Increment 7 - Compliance Engine (Claude Opus 5.5) ✅
+- Criteria model with mandatory gates, scored criteria, evidence expiry ✅
+- Findings, risk levels, abnormally low tender detection ✅
+- Scoring v2 with contribution breakdown, tie-breaks, sensitivity analysis ✅
+- Versioned storage migration v1 to v2, audit events, 95% domain coverage ✅ (100% achieved)
 
 ## Increment 8 - Decision-Ready Documentation (GPT-6 Astra)
 - Decision memo v2 with print/PDF, Markdown, and JSON evidence exports

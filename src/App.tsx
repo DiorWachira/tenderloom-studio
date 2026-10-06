@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { AppShell } from './components/layout/AppShell'
+import { evaluateTender } from './domain/evaluation'
 import { computeKpis, tenderStatus } from './domain/kpis'
 import { buildMemoText } from './domain/memo'
-import { DEFAULT_WEIGHTS, calculateWeightedScores } from './domain/scoring'
+import { DEFAULT_WEIGHTS } from './domain/scoring'
 import type { ScoreWeights } from './domain/scoring'
 import { useAuditTrail } from './hooks/useAuditTrail'
+import { useCriteria } from './hooks/useCriteria'
 import { useVendors } from './hooks/useVendors'
 import { useView } from './hooks/useView'
 import { AuditView } from './views/AuditView'
@@ -18,14 +20,34 @@ function App() {
   const [view, navigate] = useView()
   const [weights, setWeights] = useState<ScoreWeights>(DEFAULT_WEIGHTS)
   const { events, record } = useAuditTrail()
-  const { vendors, addVendor, updateVendor, removeVendor, loadSample } = useVendors(record)
+  const { criteria, addCriterion, updateCriterion, removeCriterion, resetCriteria } = useCriteria(record)
+  const { vendors, addVendor, updateVendor, removeVendor, updateCompliance, loadSample } = useVendors(
+    record,
+    criteria,
+  )
 
-  const scoreRows = useMemo(() => calculateWeightedScores(vendors, weights), [vendors, weights])
-  const kpis = useMemo(() => computeKpis(vendors, scoreRows), [vendors, scoreRows])
+  // Expiry is judged against today, so re-evaluate whenever inputs change.
+  const evaluation = useMemo(
+    () => evaluateTender(vendors, criteria, weights, new Date()),
+    [vendors, criteria, weights],
+  )
+  const { assessments, scoreRows, disqualified, sensitivity, eligibleCount, riskById } = evaluation
+  const kpis = useMemo(
+    () => computeKpis(vendors, scoreRows, eligibleCount),
+    [vendors, scoreRows, eligibleCount],
+  )
 
   const memoText = useMemo(
-    () => buildMemoText({ scoreRows, weights, generatedAt: new Date().toLocaleString() }),
-    [scoreRows, weights],
+    () =>
+      buildMemoText({
+        scoreRows,
+        weights,
+        generatedAt: new Date().toLocaleString(),
+        disqualified,
+        sensitivity,
+        riskById,
+      }),
+    [scoreRows, weights, disqualified, sensitivity, riskById],
   )
 
   const exportMemo = () => {
@@ -47,13 +69,14 @@ function App() {
     )
 
   const goToVendors = () => navigate('vendors')
+  const goToCompliance = () => navigate('compliance')
 
   return (
     <AppShell
       view={view}
       onNavigate={navigate}
-      badges={{ vendors: vendors.length }}
-      status={tenderStatus(vendors.length)}
+      badges={{ vendors: vendors.length, compliance: disqualified.length }}
+      status={tenderStatus(vendors.length, eligibleCount)}
     >
       {view === 'overview' && (
         <OverviewView
@@ -68,6 +91,7 @@ function App() {
       {view === 'vendors' && (
         <VendorsView
           vendors={vendors}
+          riskById={riskById}
           onAdd={addVendor}
           onUpdate={updateVendor}
           onRemove={removeVendor}
@@ -79,12 +103,29 @@ function App() {
         <ScoringView
           weights={weights}
           rows={scoreRows}
+          disqualified={disqualified}
+          sensitivity={sensitivity}
+          riskById={riskById}
           onWeightsChange={setWeights}
           onApplyWeights={applyWeights}
           onAddVendors={goToVendors}
+          onReviewCompliance={goToCompliance}
         />
       )}
-      {view === 'compliance' && <ComplianceView />}
+      {view === 'compliance' && (
+        <ComplianceView
+          vendors={vendors}
+          criteria={criteria}
+          assessments={assessments}
+          onUpdateResponse={updateCompliance}
+          onAddCriterion={addCriterion}
+          onUpdateCriterion={updateCriterion}
+          onRemoveCriterion={removeCriterion}
+          onResetCriteria={resetCriteria}
+          onLoadSample={loadSample}
+          onAddVendors={goToVendors}
+        />
+      )}
       {view === 'memo' && (
         <MemoView
           memoText={memoText}

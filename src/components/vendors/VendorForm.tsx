@@ -19,7 +19,6 @@ function toFormValues(record: VendorRecord): VendorFormValues {
     contactEmail: record.contactEmail,
     bidAmount: record.bidAmount,
     deliveryDays: record.deliveryDays,
-    compliant: record.compliant,
     notes: record.notes ?? '',
   }
 }
@@ -59,7 +58,7 @@ export function VendorForm({ editing, onSubmit, onCancelEdit }: VendorFormProps)
       description={
         editing
           ? `Updating ${editing.vendorName}. Save to apply, or cancel to discard.`
-          : 'Capture each bid in the same structure so comparisons stay fair and auditable.'
+          : 'Capture each bid in the same structure. Record compliance evidence in the Compliance view.'
       }
     >
       <form className="form-grid" onSubmit={submit} noValidate>
@@ -127,14 +126,6 @@ export function VendorForm({ editing, onSubmit, onCancelEdit }: VendorFormProps)
             {...register('deliveryDays')}
           />
           {error('deliveryDays')}
-        </div>
-
-        <div className="field form-grid__full">
-          <label htmlFor="compliant">Compliance status</label>
-          <select id="compliant" {...register('compliant')}>
-            <option value="yes">Compliant</option>
-            <option value="no">Not compliant</option>
-          </select>
         </div>
 
         <div className="field form-grid__full">

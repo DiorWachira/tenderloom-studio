@@ -1,44 +1,42 @@
-import type { VendorForScoring, VendorScore } from './scoring'
+import type { VendorScore } from './scoring'
 
 export type Kpis = {
   vendorCount: number
   lowestBid: number | null
   fastestDeliveryDays: number | null
   leaderName: string | null
-  /** Whole-number percentage of vendors flagged compliant. */
-  compliantShare: number | null
+  /** Whole-number percentage of vendors that pass every mandatory gate. */
+  eligibleShare: number | null
 }
 
 export type TenderStatus = 'draft' | 'evaluating' | 'ready'
 
-type KpiVendor = Pick<VendorForScoring, 'bidAmount' | 'deliveryDays' | 'compliant'>
+type KpiVendor = { bidAmount: number; deliveryDays: number }
 
-export function computeKpis(vendors: KpiVendor[], scoreRows: VendorScore[]): Kpis {
+export function computeKpis(vendors: KpiVendor[], scoreRows: VendorScore[], eligibleCount: number): Kpis {
   if (vendors.length === 0) {
     return {
       vendorCount: 0,
       lowestBid: null,
       fastestDeliveryDays: null,
       leaderName: null,
-      compliantShare: null,
+      eligibleShare: null,
     }
   }
-
-  const compliantCount = vendors.filter((vendor) => vendor.compliant === 'yes').length
 
   return {
     vendorCount: vendors.length,
     lowestBid: Math.min(...vendors.map((vendor) => vendor.bidAmount)),
     fastestDeliveryDays: Math.min(...vendors.map((vendor) => vendor.deliveryDays)),
     leaderName: scoreRows[0]?.vendorName ?? null,
-    compliantShare: Math.round((compliantCount / vendors.length) * 100),
+    eligibleShare: Math.round((eligibleCount / vendors.length) * 100),
   }
 }
 
-/** A comparison needs at least two bids, so one vendor is still "evaluating". */
-export function tenderStatus(vendorCount: number): TenderStatus {
+/** A decision needs at least two eligible bids to compare. */
+export function tenderStatus(vendorCount: number, eligibleCount: number): TenderStatus {
   if (vendorCount === 0) {
     return 'draft'
   }
-  return vendorCount === 1 ? 'evaluating' : 'ready'
+  return eligibleCount >= 2 ? 'ready' : 'evaluating'
 }

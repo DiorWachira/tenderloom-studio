@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -44,6 +45,10 @@ describe('Atelier Cream tokens meet WCAG AA', () => {
     ['sage-ink', 'sage-soft'],
     ['brass-ink', 'brass-soft'],
     ['danger', 'danger-soft'],
+    ['ink', 'accent-soft'],
+    ['ink', 'danger-soft'],
+    ['ink', 'brass-soft'],
+    ['ink-soft', 'brass-soft'],
     ...[1, 2, 3, 4, 5, 6].map((n): [string, string] => [`tint-${n}-fg`, `tint-${n}-bg`]),
   ]
 

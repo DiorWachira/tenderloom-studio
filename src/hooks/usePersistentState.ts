@@ -2,29 +2,29 @@ import { useEffect, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import type { ZodType } from 'zod'
 
-function readStored<T>(key: string, schema: ZodType<T>, fallback: T): T {
+function readStored<T>(key: string, schema: ZodType<T>, fallback: () => T): T {
   if (typeof window === 'undefined') {
-    return fallback
+    return fallback()
   }
 
   const raw = window.localStorage.getItem(key)
   if (!raw) {
-    return fallback
+    return fallback()
   }
 
   try {
     const parsed = schema.safeParse(JSON.parse(raw))
-    return parsed.success ? parsed.data : fallback
+    return parsed.success ? parsed.data : fallback()
   } catch {
-    return fallback
+    return fallback()
   }
 }
 
-/** useState mirrored to localStorage; invalid or corrupt stored data falls back silently. */
+/** useState mirrored to localStorage; missing, invalid, or corrupt data uses the lazy fallback. */
 export function usePersistentState<T>(
   key: string,
   schema: ZodType<T>,
-  fallback: T,
+  fallback: () => T,
 ): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => readStored(key, schema, fallback))
 

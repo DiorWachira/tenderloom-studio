@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { TINT_COUNT, getInitials, getTintIndex } from './identity'
 

@@ -199,6 +199,7 @@
 }
 
 .main > * {
+  min-width: 0;
   animation: rise var(--dur) var(--ease) both;
 }
 

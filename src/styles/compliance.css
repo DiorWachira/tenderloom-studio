@@ -1,0 +1,411 @@
+/* ---------- Compliance matrix ---------- */
+.matrix th,
+.matrix td {
+  vertical-align: middle;
+}
+
+.matrix__criterion {
+  min-width: 8.5rem;
+  max-width: 11rem;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.matrix__criterion > span {
+  display: block;
+}
+
+.matrix__kind {
+  margin-top: 2px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.matrix__result {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+}
+
+.matrix__score {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.matrix__cell {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+  width: 100%;
+  padding: 0.35rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.matrix__cell:hover {
+  background: var(--paper-sunk);
+  border-color: var(--line);
+}
+
+.matrix__cell[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.matrix__expiry {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brass-ink);
+}
+
+/* ---------- Evidence editor ---------- */
+.evidence {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+}
+
+.evidence__title {
+  font-size: var(--step-1);
+}
+
+.evidence__title:focus {
+  outline: none;
+}
+
+.evidence__criterion {
+  color: var(--accent-strong);
+}
+
+.evidence__meta {
+  margin-top: var(--space-1);
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.evidence__form {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.status-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.status-picker legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.status-picker__option {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  padding-left: 2.4rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-sunk);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
+}
+
+.status-picker__option input {
+  position: absolute;
+  top: 0.95rem;
+  left: var(--space-3);
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.status-picker__option:has(input:checked) {
+  border-color: var(--ink);
+  background: var(--paper);
+  box-shadow: var(--shadow-sm);
+}
+
+.status-picker__option:has(input:focus-visible) {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.status-picker__label {
+  font-weight: 800;
+}
+
+.status-picker__option[data-tone='ok'] .status-picker__label { color: var(--sage-ink); }
+.status-picker__option[data-tone='brass'] .status-picker__label { color: var(--brass-ink); }
+.status-picker__option[data-tone='risk'] .status-picker__label { color: var(--danger); }
+
+.status-picker__hint,
+.field__hint {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+/* ---------- Criteria editor ---------- */
+.criteria__note {
+  margin-bottom: var(--space-4);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.criteria {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.criteria__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-sunk);
+}
+
+.criteria__item[data-editing='true'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.criteria__label {
+  font-weight: 700;
+}
+
+.criteria__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-1);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.criteria__meta > span:first-of-type {
+  text-transform: capitalize;
+}
+
+.criteria__actions {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.criteria__form {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--line);
+}
+
+.field input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}
+
+/* ---------- Risk register ---------- */
+.register {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.register__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.register__head h3 {
+  margin-right: auto;
+  font-size: 1.05rem;
+}
+
+.register__clear {
+  margin-top: var(--space-2);
+  font-size: 0.88rem;
+  color: var(--sage-ink);
+}
+
+.register__findings {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.register__findings li {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: var(--paper-sunk);
+  font-size: 0.88rem;
+}
+
+.register__severity {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding-top: 0.15rem;
+}
+
+.register__findings li[data-severity='critical'],
+.register__findings li[data-severity='high'] {
+  background: var(--danger-soft);
+}
+
+.register__findings li[data-severity='critical'] .register__severity,
+.register__findings li[data-severity='high'] .register__severity {
+  color: var(--danger);
+}
+
+.register__findings li[data-severity='warning'] {
+  background: var(--brass-soft);
+}
+
+.register__findings li[data-severity='warning'] .register__severity {
+  color: var(--brass-ink);
+}
+
+/* ---------- Scoring additions ---------- */
+.stack {
+  display: flex;
+  flex: 1;
+  min-width: 5rem;
+  height: 0.6rem;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--paper-sunk);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.stack__part {
+  height: 100%;
+  transition: width var(--dur) var(--ease);
+}
+
+.stack__part--accent { background: var(--accent); }
+.stack__part--brass { background: var(--brass); }
+.stack__part--sage { background: var(--sage); }
+
+.stack-legend {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  text-transform: capitalize;
+}
+
+.stack-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.stack-legend__item::before {
+  content: '';
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+}
+
+.stack-legend__item--accent::before { background: var(--accent); }
+.stack-legend__item--brass::before { background: var(--brass); }
+.stack-legend__item--sage::before { background: var(--sage); }
+
+.banner {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+}
+
+.banner--warning {
+  border-left: 4px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.excluded {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--line);
+}
+
+.excluded ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.excluded li {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+}
+
+.excluded__name {
+  font-weight: 700;
+}
+
+.excluded__reason {
+  font-size: 0.88rem;
+  color: var(--danger);
+}

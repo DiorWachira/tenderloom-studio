@@ -1,6 +1,8 @@
 import { VendorsArt } from '../../assets/illustrations/EmptyArt'
+import type { RiskLevel } from '../../domain/compliance'
 import { formatDays, formatUsd } from '../../domain/format'
 import type { VendorRecord } from '../../domain/schemas'
+import { RISK_META } from '../compliance/statusMeta'
 import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
 import { Chip } from '../ui/Chip'
@@ -9,13 +11,14 @@ import { Panel } from '../ui/Panel'
 
 type VendorRosterProps = {
   vendors: VendorRecord[]
+  riskById: Record<string, RiskLevel>
   editingId: string | null
   onEdit: (vendor: VendorRecord) => void
   onDelete: (id: string) => void
   onLoadSample: () => void
 }
 
-export function VendorRoster({ vendors, editingId, onEdit, onDelete, onLoadSample }: VendorRosterProps) {
+export function VendorRoster({ vendors, riskById, editingId, onEdit, onDelete, onLoadSample }: VendorRosterProps) {
   return (
     <Panel
       title="Vendor roster"
@@ -27,7 +30,7 @@ export function VendorRoster({ vendors, editingId, onEdit, onDelete, onLoadSampl
           title="No vendors yet"
           action={<Button onClick={onLoadSample}>Load sample tender</Button>}
         >
-          Capture your first profile with the intake form, or load four demo bids to explore the
+          Capture your first profile with the intake form, or load five demo bids to explore the
           cockpit.
         </EmptyState>
       ) : (
@@ -42,8 +45,8 @@ export function VendorRoster({ vendors, editingId, onEdit, onDelete, onLoadSampl
                   &middot; {formatDays(vendor.deliveryDays)}
                 </p>
                 <p className="roster__email">{vendor.contactEmail}</p>
-                <Chip tone={vendor.compliant === 'yes' ? 'ok' : 'risk'}>
-                  {vendor.compliant === 'yes' ? 'Compliant' : 'Needs review'}
+                <Chip tone={RISK_META[riskById[vendor.id] ?? 'medium'].tone}>
+                  {RISK_META[riskById[vendor.id] ?? 'medium'].label}
                 </Chip>
               </div>
               <div className="roster__actions">
