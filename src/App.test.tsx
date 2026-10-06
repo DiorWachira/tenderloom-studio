@@ -102,14 +102,31 @@ describe('App', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /load sample tender/i })[0])
 
     const figures = screen.getByLabelText(/key figures/i)
-    expect(within(figures).getByText('$39,900')).toBeInTheDocument()
+    expect(within(figures).getByText('$33,500')).toBeInTheDocument()
     expect(within(figures).getByText('18 days')).toBeInTheDocument()
-    expect(within(figures).getByText('75%')).toBeInTheDocument()
+    expect(within(figures).getByText('80%')).toBeInTheDocument()
+    expect(within(figures).getByText('Northlake Systems')).toBeInTheDocument()
 
     expect(screen.getByText('Recommended')).toBeInTheDocument()
     expect(screen.getByText('Ready for decision')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /^vendors.*4 items/i })).toBeInTheDocument()
-    expect(JSON.parse(window.localStorage.getItem('tenderloom.vendors.v1') ?? '[]')).toHaveLength(4)
+    expect(screen.getByRole('link', { name: /^vendors.*5 items/i })).toBeInTheDocument()
+    expect(JSON.parse(window.localStorage.getItem('tenderloom.vendors.v2') ?? '[]')).toHaveLength(5)
+  })
+
+  it('excludes disqualified vendors from scoring and explains why', () => {
+    render(<App />)
+    fireEvent.click(screen.getAllByRole('button', { name: /load sample tender/i })[0])
+    goTo(/^scoring/i)
+
+    const table = screen.getByRole('table')
+    expect(within(table).queryByText('Cinderline Ops')).not.toBeInTheDocument()
+    expect(within(table).getByText('Low risk')).toBeInTheDocument()
+
+    const excluded = screen.getByRole('region', { name: /excluded by mandatory gates/i })
+    expect(within(excluded).getByText('Cinderline Ops')).toBeInTheDocument()
+    expect(
+      within(excluded).getByText('Mandatory criterion "GDPR data processing agreement" is not met.'),
+    ).toBeInTheDocument()
   })
 
   it('records weight profile and memo export actions in the audit trail', async () => {
@@ -150,41 +167,105 @@ describe('App', () => {
     expect(screen.getByText(/no recommendation to write up/i)).toBeInTheDocument()
   })
 
-  it('shows the compliance placeholder pointing at Increment 7', () => {
+  it('disqualifies a vendor when a mandatory gate is marked not met, and logs it', async () => {
     render(<App />)
+    fireEvent.click(screen.getAllByRole('button', { name: /load sample tender/i })[0])
     goTo(/^compliance/i)
 
-    expect(screen.getByText(/arrives in increment 7/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Meridian Cloud Partners, Insurance cover: Met' }))
+    expect(screen.getByRole('heading', { name: /meridian cloud partners.*insurance cover/i })).toHaveFocus()
+
+    fireEvent.click(screen.getByRole('radio', { name: /^not met/i }))
+    fireEvent.click(screen.getByRole('button', { name: /save evidence/i }))
+
+    expect(
+      screen.getByRole('button', { name: 'Meridian Cloud Partners, Insurance cover: Not met' }),
+    ).toBeInTheDocument()
+    const register = screen.getByRole('list', { name: /findings for meridian cloud partners/i })
+    expect(within(register).getByText('Mandatory criterion "Insurance cover" is not met.')).toBeInTheDocument()
+
+    goTo(/^scoring/i)
+    const excluded = screen.getByRole('region', { name: /excluded by mandatory gates/i })
+    expect(within(excluded).getByText('Meridian Cloud Partners')).toBeInTheDocument()
+
+    goTo(/^audit trail/i)
+    expect(await screen.findByText('Meridian Cloud Partners: Insurance cover not met')).toBeInTheDocument()
+    expect(screen.getByText(/meridian cloud partners failed a mandatory gate/i)).toBeInTheDocument()
   })
 
-  it('still loads vendors saved by the previous version of the app', () => {
+  it('rejects an expiry date earlier than the evidence date', () => {
+    render(<App />)
+    fireEvent.click(screen.getAllByRole('button', { name: /load sample tender/i })[0])
+    goTo(/^compliance/i)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Meridian Cloud Partners, Insurance cover: Met' }))
+    fireEvent.change(screen.getByLabelText(/evidence date/i), { target: { value: '2026-05-01' } })
+    fireEvent.change(screen.getByLabelText(/expires on/i), { target: { value: '2026-04-01' } })
+    fireEvent.click(screen.getByRole('button', { name: /save evidence/i }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/cannot be before the evidence date/i)
+  })
+
+  it('adds and removes a scored criterion from the checklist', () => {
+    render(<App />)
+    fireEvent.click(screen.getAllByRole('button', { name: /load sample tender/i })[0])
+    goTo(/^compliance/i)
+
+    fireEvent.change(screen.getByLabelText(/criterion label/i), { target: { value: 'Accessibility statement' } })
+    fireEvent.change(screen.getByLabelText(/^weight$/i), { target: { value: '15' } })
+    fireEvent.click(screen.getByRole('button', { name: /^add criterion$/i }))
+
+    expect(screen.getByRole('columnheader', { name: /accessibility statement/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Northlake Systems, Accessibility statement: Unknown' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /remove accessibility statement/i }))
+    expect(screen.queryByRole('columnheader', { name: /accessibility statement/i })).not.toBeInTheDocument()
+  })
+
+  it('no longer asks for a yes/no compliance flag on intake', () => {
+    render(<App />)
+    goTo(/^vendors/i)
+
+    expect(screen.queryByLabelText(/compliance status/i)).not.toBeInTheDocument()
+  })
+
+  it('migrates v1 vendors to the compliance checklist and keeps the v1 backup', () => {
     const now = new Date().toISOString()
-    window.localStorage.setItem(
-      'tenderloom.vendors.v1',
-      JSON.stringify([
-        {
-          id: 'legacy-1',
-          vendorName: 'Legacy Supplies',
-          serviceCategory: 'Hardware',
-          contactEmail: 'hello@legacy.example',
-          bidAmount: 12000,
-          deliveryDays: 10,
-          compliant: 'yes',
-          notes: '',
-          createdAt: now,
-          updatedAt: now,
-        },
-      ]),
-    )
+    const legacy = (id: string, vendorName: string, compliant: 'yes' | 'no') => ({
+      id,
+      vendorName,
+      serviceCategory: 'Hardware',
+      contactEmail: `${id}@legacy.example`,
+      bidAmount: 12000,
+      deliveryDays: 10,
+      compliant,
+      notes: '',
+      createdAt: now,
+      updatedAt: now,
+    })
+    const v1 = JSON.stringify([legacy('l1', 'Legacy Supplies', 'yes'), legacy('l2', 'Old Risk Co', 'no')])
+    window.localStorage.setItem('tenderloom.vendors.v1', v1)
 
     render(<App />)
     goTo(/^vendors/i)
 
-    expect(screen.getByRole('heading', { name: /legacy supplies/i })).toBeInTheDocument()
+    const legacySupplies = screen.getByRole('heading', { name: /legacy supplies/i }).closest('li')!
+    expect(within(legacySupplies).getByText('Medium risk')).toBeInTheDocument()
+    const oldRisk = screen.getByRole('heading', { name: /old risk co/i }).closest('li')!
+    expect(within(oldRisk).getByText('Disqualified')).toBeInTheDocument()
+
+    const v2 = JSON.parse(window.localStorage.getItem('tenderloom.vendors.v2') ?? '[]')
+    expect(v2).toHaveLength(2)
+    expect(v2[0]).not.toHaveProperty('compliant')
+    expect(window.localStorage.getItem('tenderloom.vendors.v1')).toBe(v1)
   })
 
   it('falls back to an empty tender when stored data is corrupt', () => {
+    window.localStorage.setItem('tenderloom.vendors.v2', '{not json')
     window.localStorage.setItem('tenderloom.vendors.v1', '{not json')
+    window.localStorage.setItem('tenderloom.criteria.v1', '[{"id":1}]')
     window.localStorage.setItem('tenderloom.audit.v1', '[{"wrong":true}]')
 
     render(<App />)
