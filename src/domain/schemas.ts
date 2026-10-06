@@ -1,7 +1,11 @@
 import { z } from 'zod'
+import { criterionResponseSchema } from './compliance'
 
 export const STORAGE_KEYS = {
-  vendors: 'tenderloom.vendors.v1',
+  vendors: 'tenderloom.vendors.v2',
+  /** Read-only after migration; kept as a backup of pre-compliance data. */
+  legacyVendors: 'tenderloom.vendors.v1',
+  criteria: 'tenderloom.criteria.v1',
   audit: 'tenderloom.audit.v1',
 } as const
 
@@ -15,7 +19,6 @@ export const vendorSchema = z.object({
     .int('Delivery days must be a whole number.')
     .positive('Delivery days must be above zero.')
     .max(365, 'Delivery days cannot exceed 365.'),
-  compliant: z.enum(['yes', 'no']),
   notes: z
     .string()
     .max(220, 'Notes should stay under 220 characters.')
@@ -23,10 +26,21 @@ export const vendorSchema = z.object({
     .or(z.literal('')),
 })
 
-export const vendorRecordSchema = vendorSchema.extend({
+const recordMeta = {
   id: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
+}
+
+export const vendorRecordSchema = vendorSchema.extend({
+  ...recordMeta,
+  compliance: z.record(z.string(), criterionResponseSchema),
+})
+
+/** Shape stored under `tenderloom.vendors.v1` before the compliance engine existed. */
+export const legacyVendorRecordSchema = vendorSchema.extend({
+  ...recordMeta,
+  compliant: z.enum(['yes', 'no']),
 })
 
 export const auditEventSchema = z.object({
@@ -39,6 +53,7 @@ export const auditEventSchema = z.object({
 export type VendorInput = z.infer<typeof vendorSchema>
 export type VendorFormValues = z.input<typeof vendorSchema>
 export type VendorRecord = z.infer<typeof vendorRecordSchema>
+export type LegacyVendorRecord = z.infer<typeof legacyVendorRecordSchema>
 export type AuditEvent = z.infer<typeof auditEventSchema>
 
 export const emptyVendorForm: VendorFormValues = {
@@ -47,6 +62,5 @@ export const emptyVendorForm: VendorFormValues = {
   contactEmail: '',
   bidAmount: 0,
   deliveryDays: 14,
-  compliant: 'yes',
   notes: '',
 }
